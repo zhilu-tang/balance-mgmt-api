@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/balance_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      platform: mysql
+      encoding: UTF-8
+      schema-locations: classpath:/db/mysql/balance_db.sql
+
+mybatis:
+  type-aliases-package: com.pkg.balance.mgmt.entity
+  mapper-locations: classpath:mapper/*.xml
+
+logging:
+  level:
+    root: info
+    com.pkg.balance.mgmt: debug
+    org.springframework.web: DEBUG
+
+server:
+  servlet:
+    context-path: /

@@ -13,9 +13,6 @@ public class AccountService {
     @Autowired
     private AccountMapper accountMapper;
 
-    @Autowired
-    private TransactionService transactionService;
-
     public Account getAccountByNumber(String accountNumber) {
         return accountMapper.findByAccountNumber(accountNumber);
     }
@@ -35,9 +32,5 @@ public class AccountService {
 
     public void updateBalance(Account account) {
         accountMapper.updateBalance(account);
-    }
-
-    public void createTransaction(Transaction transaction) {
-        transactionService.createTransaction(transaction);
     }
 }
