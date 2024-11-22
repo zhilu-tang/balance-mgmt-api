@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pkg.balance.mgmt.mapper.AccountMapper">
+
+    <select id="findByAccountNumber" resultType="com.pkg.balance.mgmt.entity.Account">
+        SELECT * FROM account WHERE account_number = #{accountNumber}
+    </select>
+
+    <update id="updateBalance">
+        UPDATE account SET balance = #{balance} WHERE account_number = #{accountNumber}
+    </update>
+
+</mapper>
