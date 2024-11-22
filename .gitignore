@@ -76,7 +76,6 @@ tmp/
 *.resx
 *.resources
 *.pdb
-*.xml
 *.exe
 *.dll
 *.com
