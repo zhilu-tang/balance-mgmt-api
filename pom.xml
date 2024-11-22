@@ -166,11 +166,15 @@
                 <version>3.3.5</version>
                 <configuration>
                     <mainClass>com.pkg.balance.mgmt.BalanceMgmtApplication</mainClass>
+                    <image>
+                        <name>ryantangdev/balance-mgmt:${imageVersion}</name>
+                    </image>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
+                            <goal>build-image</goal>
                         </goals>
                     </execution>
                 </executions>
