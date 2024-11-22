@@ -195,6 +195,7 @@
                 <configuration>
                     <repository>ryantangdev/balance-mgmt</repository>
                     <tag>${project.version}</tag>
+                    <contextDirectory>deploy</contextDirectory> <!-- 指定 Dockerfile 所在的新路径 -->
                     <buildArgs>
                         <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
                     </buildArgs>
