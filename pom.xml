@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.example</groupId>
     <artifactId>balance-mgmt-api</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <properties>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <imageVersion>1.0</imageVersion>
@@ -192,7 +192,7 @@
                     <repository>ryantangdev/balance-mgmt</repository>
                     <tag>${project.version}</tag>
                     <buildArgs>
-                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                        <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
                     </buildArgs>
                 </configuration>
             </plugin>
