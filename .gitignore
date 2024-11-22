@@ -1,0 +1,91 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# IntelliJ IDEA
+.idea
+*.iml
+out/
+
+# Maven
+target/
+
+# Gradle
+.gradle
+build/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+tmp/
+
+# Visual Studio
+*.suo
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*.vsscc
+*.sln
+*.vcproj
+*.vcxproj
+*.vcxproj.filters
+*.ncb
+*.obj
+*.manifest
+*.rgs
+*.tlog
+*.tlb
+*.res
+*.sbr
+*.pch
+*.pgc
+*.pgd
+*.bsc
+*.idb
+*.csproj.user
+*.csproj.webinfo
+*.apsx.res
+*.apsx.designer
+*.apsx.cs
+*.apsx.vb
+*.resx
+*.resources
+*.pdb
+*.xml
+*.exe
+*.dll
+*.com
+*.manifest
+*.lib
+*.so
+*.dylib
+*.class
+*.psd
+*.db
+*.sublime-project
+*.sublime-workspace
