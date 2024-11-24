@@ -2,7 +2,6 @@ package com.pkg.balance.mgmt.integration;
 
 import com.pkg.balance.mgmt.entity.Account;
 import com.pkg.balance.mgmt.entity.Transaction;
-import com.pkg.balance.mgmt.integration.config.TestConfig;
 import com.pkg.balance.mgmt.mapper.AccountMapper;
 import com.pkg.balance.mgmt.mapper.TransactionMapper;
 import com.github.javafaker.Faker;
