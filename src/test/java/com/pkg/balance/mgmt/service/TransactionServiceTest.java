@@ -1,25 +1,26 @@
 package com.pkg.balance.mgmt.service;
 
+import com.github.javafaker.Faker;
 import com.pkg.balance.mgmt.entity.Account;
 import com.pkg.balance.mgmt.entity.Transaction;
 import com.pkg.balance.mgmt.mapper.AccountMapper;
 import com.pkg.balance.mgmt.mapper.TransactionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class TransactionServiceTest {
+class TransactionServiceTest {
 
     @Mock
     private TransactionMapper transactionMapper;
@@ -30,81 +31,121 @@ public class TransactionServiceTest {
     @Mock
     private RedissonClient redissonClient;
 
-    @Mock
-    private RLock lock;
-
     @InjectMocks
     private TransactionService transactionService;
 
-    private Transaction testTransaction;
+    private Faker faker;
 
     @BeforeEach
-    public void setUp() {
-        testTransaction = new Transaction();
-        testTransaction.setAccountNumber("123456");
-        testTransaction.setAmount(100.0);
-
-        // 模拟 AccountMapper 的行为
-        Account account = new Account();
-        account.setAccountNumber("123456");
-        account.setBalance(200.0);
-        when(accountMapper.findByAccountNumber(testTransaction.getAccountNumber())).thenReturn(account);
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        faker = new Faker();
     }
 
     @Test
-    public void testCreateTransaction() throws InterruptedException {
-        // 模拟 RedissonClient 的行为
-        when(redissonClient.getLock(anyString())).thenReturn(lock);
+    void testCreateTransactionSuccess() throws InterruptedException {
+        // 准备数据
+        String sourceAccountNumber = faker.number().digits(10);
+        String destinationAccountNumber = faker.number().digits(10);
+        double amount = faker.number().randomDouble(2, 100, 1000);
 
-        // 模拟 RLock 的行为
-        when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
-        when(lock.isHeldByCurrentThread()).thenReturn(true);
+        Account sourceAccount = new Account();
+        sourceAccount.setAccountNumber(sourceAccountNumber);
+        sourceAccount.setBalance(faker.number().randomDouble(2, 1000, 5000));
 
-        transactionService.createTransaction(testTransaction);
+        Account destinationAccount = new Account();
+        destinationAccount.setAccountNumber(destinationAccountNumber);
+        destinationAccount.setBalance(faker.number().randomDouble(2, 1000, 5000));
 
-        verify(transactionMapper).insertTransaction(testTransaction);
-        verify(accountMapper).updateAccount(any(Account.class));
-        verify(lock).unlock();
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setDestinationAccountNumber(destinationAccountNumber);
+        transaction.setAmount(amount);
+
+        // 模拟方法调用
+        when(accountMapper.findByAccountNumber(sourceAccountNumber)).thenReturn(sourceAccount);
+        when(accountMapper.findByAccountNumber(destinationAccountNumber)).thenReturn(destinationAccount);
+
+        RLock sourceLock = mock(RLock.class);
+        RLock destinationLock = mock(RLock.class);
+        when(redissonClient.getLock(any(String.class))).thenReturn(sourceLock, destinationLock);
+        when(sourceLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(destinationLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+
+        // 调用方法
+        transactionService.createTransaction(transaction);
+
+        // 验证方法调用
+        verify(accountMapper).updateAccount(sourceAccount);
+        verify(accountMapper).updateAccount(destinationAccount);
+        verify(transactionMapper).insertTransaction(transaction);
     }
 
     @Test
-    public void testCreateTransaction_InsufficientBalance() throws InterruptedException {
-        // 模拟 AccountMapper 的行为
-        Account account = new Account();
-        account.setAccountNumber("123456");
-        account.setBalance(50.0);
-        when(accountMapper.findByAccountNumber(testTransaction.getAccountNumber())).thenReturn(account);
+    void testCreateTransactionInsufficientBalance() throws InterruptedException {
+        // 准备数据
+        String sourceAccountNumber = faker.number().digits(10);
+        String destinationAccountNumber = faker.number().digits(10);
+        double amount = faker.number().randomDouble(2, 1000, 5000);
 
-        // 模拟 RedissonClient 的行为
-        when(redissonClient.getLock(anyString())).thenReturn(lock);
+        Account sourceAccount = new Account();
+        sourceAccount.setAccountNumber(sourceAccountNumber);
+        sourceAccount.setBalance(faker.number().randomDouble(2, 100, 500));
 
-        // 模拟 RLock 的行为
-        when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
-        when(lock.isHeldByCurrentThread()).thenReturn(true);
+        Account destinationAccount = new Account();
+        destinationAccount.setAccountNumber(destinationAccountNumber);
+        destinationAccount.setBalance(faker.number().randomDouble(2, 1000, 5000));
 
-        assertThrows(RuntimeException.class, () -> transactionService.createTransaction(testTransaction));
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setDestinationAccountNumber(destinationAccountNumber);
+        transaction.setAmount(amount);
 
-        verify(transactionMapper, never()).insertTransaction(testTransaction);
+        // 模拟方法调用
+        when(accountMapper.findByAccountNumber(sourceAccountNumber)).thenReturn(sourceAccount);
+        when(accountMapper.findByAccountNumber(destinationAccountNumber)).thenReturn(destinationAccount);
+
+        RLock sourceLock = mock(RLock.class);
+        RLock destinationLock = mock(RLock.class);
+        when(redissonClient.getLock(any(String.class))).thenReturn(sourceLock, destinationLock);
+        when(sourceLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(destinationLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+
+        // 调用方法并捕获异常
+        assertThrows(RuntimeException.class, () -> transactionService.createTransaction(transaction));
+
+        // 验证方法调用
+        verify(accountMapper, never()).updateAccount(sourceAccount);
+        verify(accountMapper, never()).updateAccount(destinationAccount);
+        verify(transactionMapper, never()).insertTransaction(transaction);
+    }
+
+    @Test
+    void testCreateTransactionAccountNotFound() throws InterruptedException {
+        // 准备数据
+        String sourceAccountNumber = faker.number().digits(10);
+        String destinationAccountNumber = faker.number().digits(10);
+        double amount = faker.number().randomDouble(2, 100, 1000);
+
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setDestinationAccountNumber(destinationAccountNumber);
+        transaction.setAmount(amount);
+
+        // 模拟方法调用
+        when(accountMapper.findByAccountNumber(sourceAccountNumber)).thenReturn(null);
+
+        RLock sourceLock = mock(RLock.class);
+        RLock destinationLock = mock(RLock.class);
+        when(redissonClient.getLock(any(String.class))).thenReturn(sourceLock, destinationLock);
+        when(sourceLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(destinationLock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+
+        // 调用方法并捕获异常
+        assertThrows(RuntimeException.class, () -> transactionService.createTransaction(transaction));
+
+        // 验证方法调用
         verify(accountMapper, never()).updateAccount(any(Account.class));
-        verify(lock).unlock();
-    }
-
-    @Test
-    public void testCreateTransaction_AccountNotFound() throws InterruptedException {
-        // 模拟 AccountMapper 的行为
-        when(accountMapper.findByAccountNumber(testTransaction.getAccountNumber())).thenReturn(null);
-
-        // 模拟 RedissonClient 的行为
-        when(redissonClient.getLock(anyString())).thenReturn(lock);
-
-        // 模拟 RLock 的行为
-        when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
-        when(lock.isHeldByCurrentThread()).thenReturn(true);
-
-        assertThrows(RuntimeException.class, () -> transactionService.createTransaction(testTransaction));
-
-        verify(transactionMapper, never()).insertTransaction(testTransaction);
-        verify(accountMapper, never()).updateAccount(any(Account.class));
-        verify(lock).unlock();
+        verify(transactionMapper, never()).insertTransaction(transaction);
     }
 }

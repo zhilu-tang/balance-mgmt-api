@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 
 @Service
 public class TransactionService {
@@ -28,29 +29,47 @@ public class TransactionService {
 
     @Transactional
     public void createTransaction(Transaction transaction) {
-        String lockKey = LOCK_PREFIX + transaction.getAccountNumber();
-        RLock lock = redissonClient.getLock(lockKey);
+        String sourceLockKey = LOCK_PREFIX + transaction.getAccountNumber();
+        String destinationLockKey = LOCK_PREFIX + transaction.getDestinationAccountNumber();
+
+        RLock sourceLock = redissonClient.getLock(sourceLockKey);
+        RLock destinationLock = redissonClient.getLock(destinationLockKey);
 
         try {
             // 尝试获取分布式锁，最多等待10秒
-            boolean isLocked = lock.tryLock(10, TimeUnit.SECONDS);
-            if (!isLocked) {
-                throw new RuntimeException("Failed to acquire lock for account: " + transaction.getAccountNumber());
+            boolean isSourceLocked = sourceLock.tryLock(10, TimeUnit.SECONDS);
+            boolean isDestinationLocked = destinationLock.tryLock(10, TimeUnit.SECONDS);
+
+            if (!isSourceLocked || !isDestinationLocked) {
+                throw new RuntimeException("Failed to acquire lock for accounts: " + transaction.getAccountNumber() + " or " + transaction.getDestinationAccountNumber());
             }
 
-            // 扣减账户余额
-            Account account = accountMapper.findByAccountNumber(transaction.getAccountNumber());
-            if (account == null) {
-                throw new RuntimeException("Account not found");
+            // 扣减源账户余额
+            Account sourceAccount = accountMapper.findByAccountNumber(transaction.getAccountNumber());
+            if (sourceAccount == null) {
+                throw new RuntimeException("Source account not found");
             }
 
-            double newBalance = account.getBalance() - transaction.getAmount();
-            if (newBalance < 0) {
-                throw new RuntimeException("Insufficient balance");
+            double newSourceBalance = sourceAccount.getBalance() - transaction.getAmount();
+            if (newSourceBalance < 0) {
+                throw new RuntimeException("Insufficient balance in source account");
             }
 
-            account.setBalance(newBalance);
-            accountMapper.updateAccount(account);
+            sourceAccount.setBalance(newSourceBalance);
+            accountMapper.updateAccount(sourceAccount);
+
+            // 增加目标账户余额
+            Account destinationAccount = accountMapper.findByAccountNumber(transaction.getDestinationAccountNumber());
+            if (destinationAccount == null) {
+                throw new RuntimeException("Destination account not found");
+            }
+
+            double newDestinationBalance = destinationAccount.getBalance() + transaction.getAmount();
+            destinationAccount.setBalance(newDestinationBalance);
+            accountMapper.updateAccount(destinationAccount);
+
+            // 设置唯一交易ID
+            transaction.setTransactionId(UUID.randomUUID().toString());
 
             // 创建交易记录
             transactionMapper.insertTransaction(transaction);
@@ -61,8 +80,11 @@ public class TransactionService {
             throw new RuntimeException("Transaction failed", e);
         } finally {
             // 释放分布式锁
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
+            if (sourceLock.isHeldByCurrentThread()) {
+                sourceLock.unlock();
+            }
+            if (destinationLock.isHeldByCurrentThread()) {
+                destinationLock.unlock();
             }
         }
     }

@@ -2,11 +2,20 @@ package com.pkg.balance.mgmt.entity;
 
 public class Transaction {
 
+    private String transactionId;
     private String accountNumber;
+    private String destinationAccountNumber;
     private double amount;
-    private String type; // 可以是 "DEPOSIT" 或 "WITHDRAW"
 
     // Getters and Setters
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
     public String getAccountNumber() {
         return accountNumber;
     }
@@ -15,19 +24,19 @@ public class Transaction {
         this.accountNumber = accountNumber;
     }
 
+    public String getDestinationAccountNumber() {
+        return destinationAccountNumber;
+    }
+
+    public void setDestinationAccountNumber(String destinationAccountNumber) {
+        this.destinationAccountNumber = destinationAccountNumber;
+    }
+
     public double getAmount() {
         return amount;
     }
 
     public void setAmount(double amount) {
         this.amount = amount;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }

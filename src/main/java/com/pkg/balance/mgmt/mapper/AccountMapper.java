@@ -3,6 +3,8 @@ package com.pkg.balance.mgmt.mapper;
 import com.pkg.balance.mgmt.entity.Account;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 @Mapper
 public interface AccountMapper {
 
@@ -35,4 +37,11 @@ public interface AccountMapper {
     Account getAccountById(int id);
     @Update("UPDATE account SET balance = #{balance}, account_number = #{accountNumber} WHERE id = #{id}")
     int updateAccount(Account account);
+
+
+    @Delete("DELETE FROM account")
+    void deleteAllAccounts();
+
+    @Select("SELECT * FROM account")
+    List<Account> getAllAccounts();
 }
