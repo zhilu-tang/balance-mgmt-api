@@ -20,4 +20,9 @@ public interface AccountMapper {
 
     @Update("UPDATE account SET balance = #{balance} WHERE account_number = #{accountNumber}")
     int updateBalance(Account account);
+
+    @Select("SELECT * FROM account WHERE id = #{id}")
+    Account getAccountById(int id);
+    @Update("UPDATE account SET balance = #{balance}, account_number = #{accountNumber} WHERE id = #{id}")
+    int updateAccount(Account account);
 }

@@ -24,3 +24,12 @@ logging:
 server:
   servlet:
     context-path: /
+
+redisson:
+  address: "redis://127.0.0.1:6379"
+  password: "myuser_password"
+  username: "myuser"
+  database: 0
+  timeout: 3000
+  connectionPoolSize: 64
+  connectionMinimumIdleSize: 10
