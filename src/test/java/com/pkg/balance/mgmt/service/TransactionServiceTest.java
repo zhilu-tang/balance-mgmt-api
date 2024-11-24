@@ -58,6 +58,7 @@ public class TransactionServiceTest {
 
         // 模拟 RLock 的行为
         when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
 
         transactionService.createTransaction(testTransaction);
 
@@ -79,6 +80,7 @@ public class TransactionServiceTest {
 
         // 模拟 RLock 的行为
         when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
 
         assertThrows(RuntimeException.class, () -> transactionService.createTransaction(testTransaction));
 
@@ -97,6 +99,7 @@ public class TransactionServiceTest {
 
         // 模拟 RLock 的行为
         when(lock.tryLock(10, TimeUnit.SECONDS)).thenReturn(true);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
 
         assertThrows(RuntimeException.class, () -> transactionService.createTransaction(testTransaction));
 
