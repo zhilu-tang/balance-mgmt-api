@@ -7,6 +7,7 @@
     <properties>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <imageVersion>1.0</imageVersion>
+        <jmeter.version>5.6.3</jmeter.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -171,7 +172,7 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
-            <version>3.17.6</version>
+            <version>3.22.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
@@ -186,6 +187,45 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- Maven -->
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- JMeter Core -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_core</artifactId>
+            <version>${jmeter.version}</version>
+        </dependency>
+
+        <!-- JMeter HTTP 插件 -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_http</artifactId>
+            <version>${jmeter.version}</version>
+        </dependency>
+
+        <!-- JMeter Java 插件 -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_java</artifactId>
+            <version>${jmeter.version}</version>
+        </dependency>
+
+        <!-- 其他可能需要的插件 -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_junit</artifactId>
+            <version>${jmeter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_jdbc</artifactId>
+            <version>${jmeter.version}</version>
         </dependency>
 
     </dependencies>
@@ -264,6 +304,28 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- 其他插件配置 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+                        --add-opens java.base/java.io=ALL-UNNAMED
+                        --add-opens java.base/java.nio=ALL-UNNAMED
+                        --add-opens java.base/java.net=ALL-UNNAMED
+                        -Dfile.encoding=UTF-8
+                        -Xms512m
+                        -Xmx1024m
+                    </argLine>
+                    <systemPropertyVariables>
+                        <JMETER_HOME>JMETER_HOME=~/dev/code/bin/apache-jmeter-5.6.3/bin</JMETER_HOME>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
 

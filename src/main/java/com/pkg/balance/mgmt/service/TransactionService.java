@@ -32,8 +32,11 @@ public class TransactionService {
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
-            // 尝试获取分布式锁
-            lock.lock(10, TimeUnit.SECONDS);
+            // 尝试获取分布式锁，最多等待10秒
+            boolean isLocked = lock.tryLock(10, TimeUnit.SECONDS);
+            if (!isLocked) {
+                throw new RuntimeException("Failed to acquire lock for account: " + transaction.getAccountNumber());
+            }
 
             // 扣减账户余额
             Account account = accountMapper.findByAccountNumber(transaction.getAccountNumber());
@@ -51,11 +54,16 @@ public class TransactionService {
 
             // 创建交易记录
             transactionMapper.insertTransaction(transaction);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Transaction interrupted", e);
         } catch (Exception e) {
             throw new RuntimeException("Transaction failed", e);
         } finally {
             // 释放分布式锁
-            lock.unlock();
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 }
