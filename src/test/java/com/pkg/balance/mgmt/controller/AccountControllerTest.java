@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @AutoConfigureMockMvc
 @SpringBootTest(classes = BalanceMgmtApplication.class)
 @ActiveProfiles("test")
-public class AccountControllerIntegrationTest {
+public class AccountControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

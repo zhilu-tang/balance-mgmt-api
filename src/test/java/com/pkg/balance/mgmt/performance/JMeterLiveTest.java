@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import com.pkg.balance.mgmt.BalanceMgmtApplication;
 import org.apache.jmeter.control.gui.LoopControlPanel;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
@@ -22,13 +23,44 @@ import org.apache.jmeter.threads.gui.ThreadGroupGui;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 import org.apache.jorphan.collections.ListedHashTree;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
- * This is a Live Test so that JMETER_HOME Environment variable will be available to run this test.
+ * This class is a live test that runs JMeter scripts using Java code.
+ * It requires the JMETER_HOME environment variable to be set to run the test.
  */
 public class JMeterLiveTest {
 
+    /**
+     * The Spring Boot application context.
+     */
+    private static ConfigurableApplicationContext context;
+
+    /**
+     * Sets up the Spring Boot application before all tests.
+     */
+    @BeforeAll
+    public static void setUp() {
+        context = SpringApplication.run(BalanceMgmtApplication.class);
+    }
+
+    /**
+     * Tears down the Spring Boot application after all tests.
+     */
+    @AfterAll
+    public static void tearDown() {
+        if (context != null) {
+            context.close();
+        }
+    }
+
+    /**
+     * Executes a JMeter script using Java code.
+     *
+     * @throws IOException If an I/O error occurs while saving the JMeter script or configuring the JMeter engine.
+     */
     @Test
     void givenJMeterScript_whenUsingCode_thenExecuteViaJavaProgram() throws IOException {
         String jmeterHome = System.getenv("JMETER_HOME");
@@ -53,21 +85,21 @@ public class JMeterLiveTest {
 
         TestPlan testPlan = getTestPlan(threadGroup);
 
-       // 创建 HashTree 并添加测试计划
+        // Create a HashTree and add the test plan
         ListedHashTree testPlanTree = new ListedHashTree();
         testPlanTree.add(testPlan);
 
         HashTree threadGroupHashTree = testPlanTree.add(testPlan, threadGroup);
         threadGroupHashTree.add(httpSampler);
 
-        SaveService.saveTree(testPlanTree, Files.newOutputStream(Paths.get("script.jmx")));
+        SaveService.saveTree(testPlanTree, Files.newOutputStream(Paths.get("target", "script.jmx")));
         Summariser summer = null;
         String summariserName = JMeterUtils.getPropDefault("summariser.name", "summary");
         if (summariserName.length() > 0) {
             summer = new Summariser(summariserName);
         }
 
-        String logFile = "output-logs.jtl";
+        String logFile = "target/output-logs.jtl";
         ResultCollector logger = new ResultCollector(summer);
         logger.setFilename(logFile);
         testPlanTree.add(testPlanTree.getArray()[0], logger);
@@ -79,6 +111,12 @@ public class JMeterLiveTest {
         System.out.println("JMeter .jmx script is available at script.jmx");
     }
 
+    /**
+     * Creates and returns a TestPlan object with the specified ThreadGroup.
+     *
+     * @param threadGroup The ThreadGroup to add to the TestPlan.
+     * @return A configured TestPlan object.
+     */
     private static TestPlan getTestPlan(ThreadGroup threadGroup) {
         TestPlan testPlan = new TestPlan("Sample Test Plan");
         testPlan.setProperty(TestElement.TEST_CLASS, TestPlan.class.getName());
@@ -87,6 +125,12 @@ public class JMeterLiveTest {
         return testPlan;
     }
 
+    /**
+     * Creates and returns a ThreadGroup object with the specified LoopController.
+     *
+     * @param loopController The LoopController to use in the ThreadGroup.
+     * @return A configured ThreadGroup object.
+     */
     private static ThreadGroup getThreadGroup(LoopController loopController) {
         ThreadGroup threadGroup = new ThreadGroup();
         threadGroup.setName("Sample Thread Group");
@@ -98,6 +142,11 @@ public class JMeterLiveTest {
         return threadGroup;
     }
 
+    /**
+     * Creates and returns a LoopController object.
+     *
+     * @return A configured LoopController object.
+     */
     private static LoopController getLoopController() {
         LoopController loopController = new LoopController();
         loopController.setLoops(1);
@@ -108,14 +157,19 @@ public class JMeterLiveTest {
         return loopController;
     }
 
+    /**
+     * Creates and returns an HTTPSamplerProxy object with random account number and balance.
+     *
+     * @return A configured HTTPSamplerProxy object.
+     */
     private static HTTPSamplerProxy getHttpSamplerProxy() {
         Faker faker = new Faker();
         String accountNumber = faker.number().digits(6);
         double balance = faker.number().randomDouble(2, 1000, 10000);
 
         HTTPSamplerProxy httpSampler = new HTTPSamplerProxy();
-        httpSampler.setDomain("localhost"); // 假设你的应用运行在本地
-        httpSampler.setPort(8080); // 假设你的应用运行在 8080 端口
+        httpSampler.setDomain("localhost"); // Assuming the application is running locally
+        httpSampler.setPort(8080); // Assuming the application is running on port 8080
         httpSampler.setPath("/api/account/create");
         httpSampler.setMethod("POST");
         httpSampler.addArgument("accountNumber", accountNumber);
@@ -124,5 +178,4 @@ public class JMeterLiveTest {
         httpSampler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
         return httpSampler;
     }
-
 }
