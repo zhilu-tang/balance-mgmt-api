@@ -73,7 +73,7 @@ public class JMeterLiveTest {
 
         // Main Thread Group
         HTTPSamplerProxy createTransaction = getCreateTransactionSampler(sourceAccountNumber, destinationAccountNumber, 1);
-        LoopController mainLoopController = getLoopController(10);
+        LoopController mainLoopController = getLoopController(1);
         ThreadGroup mainThreadGroup = getThreadGroup(mainLoopController, "Thread Group", 10, 5);
 
         // Test Plan
