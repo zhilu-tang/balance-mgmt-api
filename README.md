@@ -178,7 +178,7 @@ http://localhost:8080/swagger-ui.html
 如果有任何问题或建议，请通过以下方式联系我们：
 
 - 邮箱：zhilu.tang@gmail.com
-- GitHub Issues：[https://github.com/zhilu.tang/balance-mgmt-api/issues](https://github.com/yourusername/balance-mgmt-api/issues)
+- GitHub Issues：[https://github.com/zhilu-tang/balance-mgmt-api/issues](https://github.com/yourusername/balance-mgmt-api/issues)
 
 ---
 
