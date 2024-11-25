@@ -61,7 +61,7 @@ class TransactionServiceIntegrationTest {
         accountMapper.insertAccount(destinationAccount);
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 
@@ -79,7 +79,7 @@ class TransactionServiceIntegrationTest {
 
         List<Transaction> transactions = transactionMapper.getAllTransactions();
         assertEquals(1, transactions.size());
-        assertEquals(sourceAccountNumber, transactions.get(0).getAccountNumber());
+        assertEquals(sourceAccountNumber, transactions.get(0).getSourceAccountNumber());
         assertEquals(destinationAccountNumber, transactions.get(0).getDestinationAccountNumber());
         assertEquals(amount, transactions.get(0).getAmount());
     }
@@ -102,7 +102,7 @@ class TransactionServiceIntegrationTest {
         accountMapper.insertAccount(destinationAccount);
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 
@@ -130,7 +130,7 @@ class TransactionServiceIntegrationTest {
         double amount = faker.number().randomDouble(2, 100, 1000);
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 

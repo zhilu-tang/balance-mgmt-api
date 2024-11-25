@@ -18,19 +18,11 @@ public class AccountService {
     }
 
     public Account createAccount(Account account) {
+        Account byAccountNumber = accountMapper.findByAccountNumber(account.getAccountNumber());
+        if(byAccountNumber != null) {
+            return byAccountNumber;
+        }
         accountMapper.insertAccount(account);
         return account;
-    }
-
-    public void increaseBalance(Account account) {
-        accountMapper.increaseBalance(account);
-    }
-
-    public void decreaseBalance(Account account) {
-        accountMapper.decreaseBalance(account);
-    }
-
-    public void updateBalance(Account account) {
-        accountMapper.updateBalance(account);
     }
 }

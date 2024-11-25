@@ -6,17 +6,24 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+
 import com.pkg.balance.mgmt.BalanceMgmtApplication;
+import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.control.gui.LoopControlPanel;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
+import org.apache.jmeter.modifiers.JSR223PreProcessor;
+import org.apache.jmeter.protocol.http.control.Header;
+import org.apache.jmeter.protocol.http.control.HeaderManager;
 import org.apache.jmeter.protocol.http.control.gui.HttpTestSampleGui;
 import org.apache.jmeter.protocol.http.sampler.HTTPSamplerProxy;
+import org.apache.jmeter.protocol.http.util.HTTPArgument;
 import org.apache.jmeter.reporters.ResultCollector;
 import org.apache.jmeter.reporters.Summariser;
 import org.apache.jmeter.save.SaveService;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.testelement.TestPlan;
+import org.apache.jmeter.testelement.property.JMeterProperty;
 import org.apache.jmeter.threads.ThreadGroup;
 import org.apache.jmeter.control.LoopController;
 import org.apache.jmeter.threads.gui.ThreadGroupGui;
@@ -69,7 +76,7 @@ public class JMeterLiveTest {
 //            throw new RuntimeException("JMETER_HOME environment variable is not set.");
         }
 
-        String file = Objects.requireNonNull(JMeterLiveTest.class.getClassLoader().getResource("jmeter.properties")).getFile();
+        String file = Objects.requireNonNull(JMeterLiveTest.class.getClassLoader().getResource("loadtesting/jmeter.properties")).getFile();
         JMeterUtils.setJMeterHome(jmeterHome);
 
         JMeterUtils.loadJMeterProperties(file);
@@ -77,7 +84,7 @@ public class JMeterLiveTest {
 
         StandardJMeterEngine jmeter = new StandardJMeterEngine();
 
-        HTTPSamplerProxy httpSampler = getHttpSamplerProxy();
+        HTTPSamplerProxy httpSampler = getDynamicHttpSamplerProxy();
 
         LoopController loopController = getLoopController();
 
@@ -178,4 +185,63 @@ public class JMeterLiveTest {
         httpSampler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
         return httpSampler;
     }
+
+    private static HTTPSamplerProxy getDynamicHttpSamplerProxy() {
+        // 创建 HTTPSamplerProxy 实例
+        HTTPSamplerProxy sampler = new HTTPSamplerProxy();
+        sampler.setDomain("localhost");
+        sampler.setPort(8080);
+        sampler.setPath("/api/account/createTransaction");
+        sampler.setMethod("POST");
+
+        // 创建 JSR223PreProcessor 实例
+        JSR223PreProcessor preProcessor = new JSR223PreProcessor();
+        preProcessor.setProperty("cacheKey", "");
+        preProcessor.setProperty("filename", "");
+        preProcessor.setProperty("parameters", "");
+        preProcessor.setProperty("script", "import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;\n" +
+                "import java.util.Random;\n" +
+                "\n" +
+                "Random random = new Random();\n" +
+                "String sourceAccountNumber = String.format('%010d', random.nextInt(1000000000));\n" +
+                "String destinationAccountNumber = String.format('%010d', random.nextInt(1000000000));\n" +
+                "double amount = 100 + (1000 - 100) * random.nextDouble();\n" +
+                "\n" +
+                "vars.put('sourceAccountNumber', sourceAccountNumber);\n" +
+                "vars.put('destinationAccountNumber', destinationAccountNumber);\n" +
+                "vars.put('amount', String.valueOf(amount));");
+        preProcessor.setProperty("scriptLanguage", "groovy");
+
+        // 设置 HTTP 请求体
+        Arguments arguments = new Arguments();
+        HTTPArgument bodyArg = new HTTPArgument("", "{\n" +
+                "  \"sourceAccountNumber\": ${sourceAccountNumber},\n" +
+                "  \"destinationAccountNumber\": ${destinationAccountNumber},\n" +
+                "  \"amount\": ${amount}\n" +
+                "}", "", false);
+        arguments.addArgument(bodyArg);
+
+        // 将 Arguments 对象设置为请求体
+        sampler.setPostBodyRaw(true);
+        sampler.setArguments(arguments);
+
+        // 创建 HTTPHeaderManager 实例并设置请求头
+        HeaderManager headerManager = new HeaderManager();
+        headerManager.add(new Header("content-type", "application/json"));
+        headerManager.add(new Header("accept", "application/json"));
+
+        System.out.println("Request Body: " + sampler.getArguments().getArgument(0).getValue());
+
+        // 打印 HeaderManager 中的头部信息
+        for (JMeterProperty header : headerManager.getHeaders()) {
+            System.out.println("Header: " + header.getName() + ": " + header.getStringValue());
+        }
+        // 将 JSR223PreProcessor 和 HTTPHeaderManager 添加到 HTTPSamplerProxy
+        sampler.addTestElement(preProcessor);
+        sampler.addTestElement(headerManager);
+
+        return sampler;
+    }
+
+
 }

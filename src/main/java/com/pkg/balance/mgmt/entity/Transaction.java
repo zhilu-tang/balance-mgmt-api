@@ -1,9 +1,12 @@
 package com.pkg.balance.mgmt.entity;
 
+import lombok.ToString;
+
+@ToString
 public class Transaction {
 
     private String transactionId;
-    private String accountNumber;
+    private String sourceAccountNumber;
     private String destinationAccountNumber;
     private double amount;
 
@@ -16,12 +19,12 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public String getAccountNumber() {
-        return accountNumber;
+    public String getSourceAccountNumber() {
+        return sourceAccountNumber;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
+    public void setSourceAccountNumber(String sourceAccountNumber) {
+        this.sourceAccountNumber = sourceAccountNumber;
     }
 
     public String getDestinationAccountNumber() {

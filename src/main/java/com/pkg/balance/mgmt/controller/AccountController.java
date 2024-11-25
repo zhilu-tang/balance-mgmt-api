@@ -4,12 +4,13 @@ import com.pkg.balance.mgmt.entity.Account;
 import com.pkg.balance.mgmt.entity.Transaction;
 import com.pkg.balance.mgmt.service.AccountService;
 import com.pkg.balance.mgmt.service.TransactionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/account")
+@Slf4j
 public class AccountController {
 
     @Autowired
@@ -28,23 +29,10 @@ public class AccountController {
         return accountService.createAccount(account);
     }
 
-    @PostMapping("/increaseBalance")
-    public void increaseBalance(@RequestBody Account account) {
-        accountService.increaseBalance(account);
-    }
-
-    @PostMapping("/decreaseBalance")
-    public void decreaseBalance(@RequestBody Account account) {
-        accountService.decreaseBalance(account);
-    }
-
     @PostMapping("/createTransaction")
     public void createTransaction(@RequestBody Transaction transaction) {
+        log.info("Transaction: {}", transaction);
         transactionService.createTransaction(transaction);
     }
 
-    @PostMapping("/updateBalance")
-    public void updateBalance(@RequestBody Account account) {
-        accountService.updateBalance(account);
-    }
 }

@@ -13,7 +13,6 @@ import org.mockito.MockitoAnnotations;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,7 +57,7 @@ class TransactionServiceTest {
         destinationAccount.setBalance(faker.number().randomDouble(2, 1000, 5000));
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 
@@ -97,7 +96,7 @@ class TransactionServiceTest {
         destinationAccount.setBalance(faker.number().randomDouble(2, 1000, 5000));
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 
@@ -128,7 +127,7 @@ class TransactionServiceTest {
         double amount = faker.number().randomDouble(2, 100, 1000);
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(sourceAccountNumber);
+        transaction.setSourceAccountNumber(sourceAccountNumber);
         transaction.setDestinationAccountNumber(destinationAccountNumber);
         transaction.setAmount(amount);
 

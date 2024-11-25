@@ -29,7 +29,7 @@ public class TransactionService {
 
     @Transactional
     public void createTransaction(Transaction transaction) {
-        String sourceLockKey = LOCK_PREFIX + transaction.getAccountNumber();
+        String sourceLockKey = LOCK_PREFIX + transaction.getSourceAccountNumber();
         String destinationLockKey = LOCK_PREFIX + transaction.getDestinationAccountNumber();
 
         RLock sourceLock = redissonClient.getLock(sourceLockKey);
@@ -41,11 +41,11 @@ public class TransactionService {
             boolean isDestinationLocked = destinationLock.tryLock(10, TimeUnit.SECONDS);
 
             if (!isSourceLocked || !isDestinationLocked) {
-                throw new RuntimeException("Failed to acquire lock for accounts: " + transaction.getAccountNumber() + " or " + transaction.getDestinationAccountNumber());
+                throw new RuntimeException("Failed to acquire lock for accounts: " + transaction.getSourceAccountNumber() + " or " + transaction.getDestinationAccountNumber());
             }
 
             // 扣减源账户余额
-            Account sourceAccount = accountMapper.findByAccountNumber(transaction.getAccountNumber());
+            Account sourceAccount = accountMapper.findByAccountNumber(transaction.getSourceAccountNumber());
             if (sourceAccount == null) {
                 throw new RuntimeException("Source account not found");
             }

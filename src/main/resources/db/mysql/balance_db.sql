@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS account (
 CREATE TABLE IF NOT EXISTS transaction (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     transaction_id VARCHAR(255) NOT NULL UNIQUE,
-    account_number VARCHAR(255) NOT NULL,
+    source_account_number VARCHAR(255) NOT NULL,
     destination_account_number VARCHAR(255) NOT NULL,
     amount DECIMAL(19, 4) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

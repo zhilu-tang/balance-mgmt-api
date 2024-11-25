@@ -51,31 +51,4 @@ public class AccountServiceTest {
         assertEquals(testAccount, createdAccount);
         verify(accountMapper).insertAccount(testAccount);
     }
-
-    @Test
-    public void testIncreaseBalance() {
-        when(accountMapper.increaseBalance(testAccount)).thenReturn(1);
-
-        accountService.increaseBalance(testAccount);
-
-        verify(accountMapper).increaseBalance(testAccount);
-    }
-
-    @Test
-    public void testDecreaseBalance() {
-        when(accountMapper.decreaseBalance(testAccount)).thenReturn(1);
-
-        accountService.decreaseBalance(testAccount);
-
-        verify(accountMapper).decreaseBalance(testAccount);
-    }
-
-    @Test
-    public void testUpdateBalance() {
-        when(accountMapper.updateBalance(testAccount)).thenReturn(1);
-
-        accountService.updateBalance(testAccount);
-
-        verify(accountMapper).updateBalance(testAccount);
-    }
 }
