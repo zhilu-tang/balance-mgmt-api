@@ -33,3 +33,17 @@ redisson:
   timeout: 3000
   connectionPoolSize: 64
   connectionMinimumIdleSize: 10
+
+
+management:
+  health:
+    redis:
+      enabled: false
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
