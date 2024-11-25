@@ -5,7 +5,7 @@ metadata:
   labels:
     app: balance-mgmt-api
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: balance-mgmt-api
-        image: ryantangdev/balance-mgmt:1.6
+        image: ryantangdev/balance-mgmt:1.7.RELEASE
         ports:
         - containerPort: 8080
         env:

@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
     <properties>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
-        <imageVersion>1.6</imageVersion>
+        <imageVersion>1.7.RELEASE</imageVersion>
         <jmeter.version>5.6.3</jmeter.version>
     </properties>
     <dependencyManagement>
