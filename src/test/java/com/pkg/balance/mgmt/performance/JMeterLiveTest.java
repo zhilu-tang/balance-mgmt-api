@@ -11,10 +11,8 @@ import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.control.gui.LoopControlPanel;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
-import org.apache.jmeter.modifiers.JSR223PreProcessor;
 import org.apache.jmeter.protocol.http.control.Header;
 import org.apache.jmeter.protocol.http.control.HeaderManager;
-import org.apache.jmeter.protocol.http.control.gui.HttpTestSampleGui;
 import org.apache.jmeter.protocol.http.sampler.HTTPSamplerProxy;
 import org.apache.jmeter.protocol.http.util.HTTPArgument;
 import org.apache.jmeter.reporters.ResultCollector;
@@ -22,7 +20,6 @@ import org.apache.jmeter.reporters.Summariser;
 import org.apache.jmeter.save.SaveService;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jmeter.testelement.TestPlan;
-import org.apache.jmeter.testelement.property.JMeterProperty;
 import org.apache.jmeter.threads.ThreadGroup;
 import org.apache.jmeter.control.LoopController;
 import org.apache.jmeter.threads.gui.ThreadGroupGui;
@@ -65,13 +62,17 @@ public class JMeterLiveTest {
         StandardJMeterEngine jmeter = new StandardJMeterEngine();
 
         // Setup Thread Group
-        HTTPSamplerProxy createAccount1 = getCreateAccountSampler(266955833, 100000000);
-        HTTPSamplerProxy createAccount2 = getCreateAccountSampler(470572990, 10000000);
+        Faker faker = new Faker();
+        Long sourceAccountNumber = Long.parseLong(faker.number().digits(6));
+        Long destinationAccountNumber = Long.parseLong(faker.number().digits(6));
+
+        HTTPSamplerProxy createAccount1 = getCreateAccountSampler(sourceAccountNumber, 100000000);
+        HTTPSamplerProxy createAccount2 = getCreateAccountSampler(destinationAccountNumber, 100000000);
         LoopController setupLoopController = getLoopController(1);
         ThreadGroup setupThreadGroup = getThreadGroup(setupLoopController, "setUp Thread Group", 1, 0);
 
         // Main Thread Group
-        HTTPSamplerProxy createTransaction = getCreateTransactionSampler(266955833, 470572990, 1);
+        HTTPSamplerProxy createTransaction = getCreateTransactionSampler(sourceAccountNumber, destinationAccountNumber, 1);
         LoopController mainLoopController = getLoopController(10);
         ThreadGroup mainThreadGroup = getThreadGroup(mainLoopController, "Thread Group", 10, 5);
 
