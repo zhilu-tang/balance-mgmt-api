@@ -5,7 +5,7 @@ metadata:
   labels:
     app: balance-mgmt-api
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -21,12 +21,12 @@ spec:
     spec:
       containers:
       - name: balance-mgmt-api
-        image: ryantangdev/balance-mgmt:1.1
+        image: ryantangdev/balance-mgmt:1.3
         ports:
         - containerPort: 8080
         env:
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:mysql://mysql-service:3306/balance_db
+          value: jdbc:mysql://host.docker.internal:3306/balance_db
         - name: SPRING_DATASOURCE_USERNAME
           valueFrom:
             secretKeyRef:
@@ -37,10 +37,14 @@ spec:
             secretKeyRef:
               name: db-credentials
               key: password
+        - name: SPRINT_REDIS_URL
+          value: redis://host.docker.internal:6379
         - name: SPRING_REDIS_HOST
-          value: redis-service
+          value: host.docker.internal
         - name: SPRING_REDIS_PORT
           value: "6379"
+        - name: SPRING_REDIS_USERNAME
+          value: "myuser"
         - name: SPRING_REDIS_PASSWORD
           value: "myuser_password"
         resources:

@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   type: ExternalName
-  externalName: 127.0.0.1
+  externalName: 192.168.5.58
   ports:
     - port: 3306
       targetPort: 3306

@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   type: ExternalName
-  externalName: localhost
+  externalName: 192.168.5.58
   ports:
     - port: 6379
       targetPort: 6379

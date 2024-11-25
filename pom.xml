@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
     <properties>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
-        <imageVersion>1.1</imageVersion>
+        <imageVersion>1.3</imageVersion>
         <jmeter.version>5.6.3</jmeter.version>
     </properties>
     <dependencyManagement>
@@ -286,6 +286,7 @@
                     <mainClass>com.pkg.balance.mgmt.BalanceMgmtApplication</mainClass>
                     <image>
                         <name>ryantangdev/balance-mgmt:${imageVersion}</name>
+                        <builder>paketobuildpacks/builder-jammy-base:0.4.358</builder>
                     </image>
                 </configuration>
                 <executions>
