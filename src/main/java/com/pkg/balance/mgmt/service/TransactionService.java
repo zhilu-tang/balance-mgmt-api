@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
-import java.util.UUID;
 
 /**
  * Service class responsible for handling transactions between accounts.
