@@ -45,6 +45,7 @@ balance-mgmt-api/
 │               │   └── BalanceServiceTest.java
 │               └── BalanceApplicationTests.java
 ├── deploy        # k8s 集群部署文件
+├── loadtesting   # 性能测试脚本、性能测试报告
 ├── pom.xml       # Maven 构建脚本
 └── README.md     # 项目说明文档
 ```
