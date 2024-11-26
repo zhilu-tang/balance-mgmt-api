@@ -44,7 +44,7 @@ balance-mgmt-api/
 │               ├── service/
 │               │   └── BalanceServiceTest.java
 │               └── BalanceApplicationTests.java
-├── build.gradle  # Gradle 构建脚本
+├── deploy        # k8s 集群部署文件
 ├── pom.xml       # Maven 构建脚本
 └── README.md     # 项目说明文档
 ```
