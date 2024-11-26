@@ -7,6 +7,9 @@ import com.pkg.balance.mgmt.mapper.TransactionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class responsible for handling account-related operations.
+ */
 @Service
 public class AccountService {
 

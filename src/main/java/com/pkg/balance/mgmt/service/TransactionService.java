@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 
+/**
+ * Service class responsible for handling transactions between accounts.
+ */
 @Service
 public class TransactionService {
 
@@ -44,6 +47,9 @@ public class TransactionService {
     private DefaultMQProducer producer;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Initializes the RocketMQ producer when the service starts.
+     */
     @PostConstruct
     public void init() {
         producer = new DefaultMQProducer(producerGroup);
@@ -55,6 +61,9 @@ public class TransactionService {
         }
     }
 
+    /**
+     * Shuts down the RocketMQ producer when the service is destroyed.
+     */
     @PreDestroy
     public void destroy() {
         if (producer != null) {
@@ -62,12 +71,18 @@ public class TransactionService {
         }
     }
 
+    /**
+     * Creates a new transaction between two accounts.
+     * Ensures that the locks are acquired in a consistent order to avoid deadlocks.
+     *
+     * @param transaction The transaction details.
+     */
     @Transactional
     public void createTransaction(Transaction transaction) {
         String sourceLockKey = LOCK_PREFIX + transaction.getSourceAccountNumber();
         String destinationLockKey = LOCK_PREFIX + transaction.getDestinationAccountNumber();
 
-        // 确保总是先获取账户编号较小的锁
+        // Ensure the lock is always acquired in the same order to prevent deadlocks
         if (transaction.getSourceAccountNumber().compareTo(transaction.getDestinationAccountNumber()) < 0) {
             lockAndProcessTransaction(sourceLockKey, destinationLockKey, transaction);
         } else {
@@ -75,12 +90,19 @@ public class TransactionService {
         }
     }
 
+    /**
+     * Locks the accounts and processes the transaction.
+     *
+     * @param firstLockKey   The key for the first lock.
+     * @param secondLockKey  The key for the second lock.
+     * @param transaction    The transaction details.
+     */
     private void lockAndProcessTransaction(String firstLockKey, String secondLockKey, Transaction transaction) {
         RLock firstLock = redissonClient.getLock(firstLockKey);
         RLock secondLock = redissonClient.getLock(secondLockKey);
 
         try {
-            // 尝试获取分布式锁，最多等待10秒
+            // Try to acquire distributed locks with a maximum wait time of 10 seconds
             boolean isFirstLocked = firstLock.tryLock(10, TimeUnit.SECONDS);
             boolean isSecondLocked = secondLock.tryLock(10, TimeUnit.SECONDS);
 
@@ -88,7 +110,7 @@ public class TransactionService {
                 throw new RuntimeException("Failed to acquire lock for accounts: " + transaction.getSourceAccountNumber() + " or " + transaction.getDestinationAccountNumber());
             }
 
-            // 扣减源账户余额
+            // Deduct the amount from the source account
             Account sourceAccount = accountMapper.findByAccountNumber(transaction.getSourceAccountNumber());
             if (sourceAccount == null) {
                 throw new RuntimeException("Source account not found");
@@ -102,7 +124,7 @@ public class TransactionService {
             sourceAccount.setBalance(newSourceBalance);
             accountMapper.updateAccount(sourceAccount);
 
-            // 增加目标账户余额
+            // Add the amount to the destination account
             Account destinationAccount = accountMapper.findByAccountNumber(transaction.getDestinationAccountNumber());
             if (destinationAccount == null) {
                 throw new RuntimeException("Destination account not found");
@@ -112,10 +134,10 @@ public class TransactionService {
             destinationAccount.setBalance(newDestinationBalance);
             accountMapper.updateAccount(destinationAccount);
 
-            // 设置唯一交易ID
+            // Set a unique transaction ID
             transaction.setTransactionId(UUID.randomUUID().toString());
 
-            // 创建交易记录
+            // Create the transaction record
             transactionMapper.insertTransaction(transaction);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -125,7 +147,7 @@ public class TransactionService {
             sendToRetryQueue(transaction);
             throw new RuntimeException("Transaction failed", e);
         } finally {
-            // 释放分布式锁
+            // Release the distributed locks
             if (firstLock.isHeldByCurrentThread()) {
                 firstLock.unlock();
             }
@@ -135,6 +157,11 @@ public class TransactionService {
         }
     }
 
+    /**
+     * Sends the transaction to a retry queue if it fails.
+     *
+     * @param transaction The transaction details.
+     */
     void sendToRetryQueue(Transaction transaction) {
         try {
             String messageBody = objectMapper.writeValueAsString(transaction);

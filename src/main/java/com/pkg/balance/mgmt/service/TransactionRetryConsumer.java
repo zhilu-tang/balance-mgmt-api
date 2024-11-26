@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * Consumer class responsible for retrying failed transactions.
+ */
 @Component
 public class TransactionRetryConsumer {
 
