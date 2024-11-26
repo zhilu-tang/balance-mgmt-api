@@ -53,7 +53,12 @@ balance-mgmt-api/
 - **编程语言**：Java
 - **框架**：Spring Boot
 - **数据库**：MySQL
+- **缓存**：Redis
+- **消息队列**：RocketMQ
+- **容器化部署**：Docker\Kubernetes
 - **构建工具**：Maven
+- **测试框架**：JUnit\Mockito
+- **性能测试**：JMeter
 - **API 文档**：Swagger
 
 ## 核心功能
@@ -92,7 +97,7 @@ balance-mgmt-api/
 
 ### 1. 数据库配置
 
-在 `src/main/resources/application.yml` 中配置数据库连接信息：
+在 `src/main/resources/application.yml` 中配置数据库、缓存、消息队列等连接信息，以数据库为例：
 
 ```
 spring:
@@ -124,7 +129,7 @@ sh mvn test
 
 ### 2. 集成测试
 项目包含集成测试，位于 `src/test/java` 目录下。
-对 rest 接口采用端到端集成测试，需要配置好数据库、缓存连接信息，会自动自动创建测试数据库。
+对 rest 接口采用端到端集成测试，需要配置好数据库、缓存连接信息，应用启动时自动创建测试数据库。
 
 ### 3. 性能测试
 性能测试脚本位于 loadtesting 目录下。执行以下命令运行性能测试：
