@@ -194,6 +194,11 @@
             <artifactId>rocketmq-client</artifactId>
             <version>4.9.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.philippheuer.snowflake4j</groupId>
+            <artifactId>snowflake4j</artifactId>
+            <version>1.0.1</version>
+        </dependency>
 
         <!-- Maven -->
         <dependency>

@@ -1,6 +1,7 @@
 package com.pkg.balance.mgmt.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.philippheuer.snowflake4j.SnowflakeGenerator;
 import com.pkg.balance.mgmt.entity.Account;
 import com.pkg.balance.mgmt.entity.Transaction;
 import com.pkg.balance.mgmt.mapper.AccountMapper;
@@ -46,6 +47,7 @@ public class TransactionService {
     private static final String LOCK_PREFIX = "account_lock_";
     private DefaultMQProducer producer;
     private ObjectMapper objectMapper = new ObjectMapper();
+    private final SnowflakeGenerator idGenerator = SnowflakeGenerator.builder().build();
 
     /**
      * Initializes the RocketMQ producer when the service starts.
@@ -135,7 +137,7 @@ public class TransactionService {
             accountMapper.updateAccount(destinationAccount);
 
             // Set a unique transaction ID
-            transaction.setTransactionId(UUID.randomUUID().toString());
+            transaction.setTransactionId(idGenerator.nextSnowflake().toString());
 
             // Create the transaction record
             transactionMapper.insertTransaction(transaction);
