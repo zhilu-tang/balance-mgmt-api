@@ -12,7 +12,7 @@ COPY /target/balance-mgmt-api.jar /app/balance-mgmt-api.jar
 
 # 设置环境变量
 ENV JAVA_OPTS=""
-ENV spring.profiles.active=cluster
+ENV spring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 # 设置启动命令
 ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /app/balance-mgmt-api.jar" ]
