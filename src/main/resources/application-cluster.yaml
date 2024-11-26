@@ -35,4 +35,5 @@ redisson:
   connectionMinimumIdleSize: 10
 
 rocketmq:
-  name-server: ${ROCKETMQ_URL}
+  namesrv:
+    addr: ${ROCKETMQ_URL}
