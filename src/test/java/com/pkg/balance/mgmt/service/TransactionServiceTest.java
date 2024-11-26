@@ -33,7 +33,13 @@ class TransactionServiceTest {
     @InjectMocks
     private TransactionService transactionService;
 
+    @Mock
+    private TransactionService transactionServiceMock;
+
     private Faker faker;
+
+    @Mock
+    private RLock rLock;
 
     @BeforeEach
     void setUp() {
@@ -146,5 +152,40 @@ class TransactionServiceTest {
         // 验证方法调用
         verify(accountMapper, never()).updateAccount(any(Account.class));
         verify(transactionMapper, never()).insertTransaction(transaction);
+    }
+
+    @Test
+    public void testCreateTransactionFailureAndRetry() throws Exception {
+        // 模拟失败情况
+        // 生成测试数据
+        String sourceAccountNumber = faker.number().digits(10);
+        String destinationAccountNumber = faker.number().digits(10);
+        double amount = faker.number().randomDouble(2, 100, 1000);
+
+        Account sourceAccount = new Account();
+        sourceAccount.setAccountNumber(sourceAccountNumber);
+        sourceAccount.setBalance(faker.number().randomDouble(2, 100, 500));
+
+        // 模拟方法调用
+        when(accountMapper.findByAccountNumber(anyString())).thenReturn(sourceAccount);
+        when(redissonClient.getLock(anyString())).thenReturn(rLock);
+        when(rLock.tryLock(anyLong(), any(TimeUnit.class))).thenReturn(true);
+
+        // 模拟发送消息失败
+        doThrow(new RuntimeException("Failed to send transaction to retry queue"))
+                .when(transactionServiceMock)
+                .sendToRetryQueue(any(Transaction.class));
+
+        Transaction transaction = new Transaction();
+        transaction.setSourceAccountNumber(sourceAccountNumber);
+        transaction.setDestinationAccountNumber(destinationAccountNumber);
+        transaction.setAmount(amount);
+
+        try {
+            transactionServiceMock.createTransaction(transaction);
+        } catch (RuntimeException e) {
+            // 验证发送重试队列的方法被调用
+            verify(transactionServiceMock, times(1)).sendToRetryQueue(any(Transaction.class));
+        }
     }
 }

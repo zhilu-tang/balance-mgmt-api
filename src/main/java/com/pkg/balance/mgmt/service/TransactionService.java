@@ -1,12 +1,21 @@
 package com.pkg.balance.mgmt.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pkg.balance.mgmt.entity.Account;
 import com.pkg.balance.mgmt.entity.Transaction;
 import com.pkg.balance.mgmt.mapper.AccountMapper;
 import com.pkg.balance.mgmt.mapper.TransactionMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.SendStatus;
+import org.apache.rocketmq.common.message.Message;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +34,33 @@ public class TransactionService {
     @Autowired
     private RedissonClient redissonClient;
 
+    @Value("${rocketmq.producer.group}")
+    private String producerGroup;
+
+    @Value("${rocketmq.namesrv.addr}")
+    private String namesrvAddr;
+
     private static final String LOCK_PREFIX = "account_lock_";
+    private DefaultMQProducer producer;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostConstruct
+    public void init() {
+        producer = new DefaultMQProducer(producerGroup);
+        producer.setNamesrvAddr(namesrvAddr);
+        try {
+            producer.start();
+        } catch (MQClientException e) {
+            throw new RuntimeException("Failed to start RocketMQ producer", e);
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (producer != null) {
+            producer.shutdown();
+        }
+    }
 
     @Transactional
     public void createTransaction(Transaction transaction) {
@@ -75,8 +110,10 @@ public class TransactionService {
             transactionMapper.insertTransaction(transaction);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            sendToRetryQueue(transaction);
             throw new RuntimeException("Transaction interrupted", e);
         } catch (Exception e) {
+            sendToRetryQueue(transaction);
             throw new RuntimeException("Transaction failed", e);
         } finally {
             // 释放分布式锁
@@ -86,6 +123,19 @@ public class TransactionService {
             if (destinationLock.isHeldByCurrentThread()) {
                 destinationLock.unlock();
             }
+        }
+    }
+
+    void sendToRetryQueue(Transaction transaction) {
+        try {
+            String messageBody = objectMapper.writeValueAsString(transaction);
+            Message message = new Message("TransactionRetryTopic", "TagA", messageBody.getBytes());
+            SendResult sendResult = producer.send(message);
+            if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+                throw new RuntimeException("Failed to send transaction to retry queue: " + sendResult.getSendStatus());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send transaction to retry queue", e);
         }
     }
 }

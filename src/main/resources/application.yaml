@@ -35,6 +35,12 @@ redisson:
   connectionPoolSize: 64
   connectionMinimumIdleSize: 10
 
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: TransactionProducerGroup
+  consumer:
+    group: TransactionConsumerGroup
 
 management:
   health:

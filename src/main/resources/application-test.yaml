@@ -24,3 +24,11 @@ logging:
 server:
   servlet:
     context-path: /
+
+chaosmonkey:
+  enabled: true
+  attackMode: random
+  attackInterval: 60000
+  latencyRangeStart: 1000
+  latencyRangeEnd: 5000
+  exceptionProbability: 0.1

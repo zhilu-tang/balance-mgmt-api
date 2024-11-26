@@ -33,3 +33,6 @@ redisson:
   timeout: 3000
   connectionPoolSize: 64
   connectionMinimumIdleSize: 10
+
+rocketmq:
+  name-server: ${ROCKETMQ_URL}
