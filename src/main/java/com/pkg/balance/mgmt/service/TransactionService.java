@@ -67,15 +67,24 @@ public class TransactionService {
         String sourceLockKey = LOCK_PREFIX + transaction.getSourceAccountNumber();
         String destinationLockKey = LOCK_PREFIX + transaction.getDestinationAccountNumber();
 
-        RLock sourceLock = redissonClient.getLock(sourceLockKey);
-        RLock destinationLock = redissonClient.getLock(destinationLockKey);
+        // 确保总是先获取账户编号较小的锁
+        if (transaction.getSourceAccountNumber().compareTo(transaction.getDestinationAccountNumber()) < 0) {
+            lockAndProcessTransaction(sourceLockKey, destinationLockKey, transaction);
+        } else {
+            lockAndProcessTransaction(destinationLockKey, sourceLockKey, transaction);
+        }
+    }
+
+    private void lockAndProcessTransaction(String firstLockKey, String secondLockKey, Transaction transaction) {
+        RLock firstLock = redissonClient.getLock(firstLockKey);
+        RLock secondLock = redissonClient.getLock(secondLockKey);
 
         try {
             // 尝试获取分布式锁，最多等待10秒
-            boolean isSourceLocked = sourceLock.tryLock(10, TimeUnit.SECONDS);
-            boolean isDestinationLocked = destinationLock.tryLock(10, TimeUnit.SECONDS);
+            boolean isFirstLocked = firstLock.tryLock(10, TimeUnit.SECONDS);
+            boolean isSecondLocked = secondLock.tryLock(10, TimeUnit.SECONDS);
 
-            if (!isSourceLocked || !isDestinationLocked) {
+            if (!isFirstLocked || !isSecondLocked) {
                 throw new RuntimeException("Failed to acquire lock for accounts: " + transaction.getSourceAccountNumber() + " or " + transaction.getDestinationAccountNumber());
             }
 
@@ -117,11 +126,11 @@ public class TransactionService {
             throw new RuntimeException("Transaction failed", e);
         } finally {
             // 释放分布式锁
-            if (sourceLock.isHeldByCurrentThread()) {
-                sourceLock.unlock();
+            if (firstLock.isHeldByCurrentThread()) {
+                firstLock.unlock();
             }
-            if (destinationLock.isHeldByCurrentThread()) {
-                destinationLock.unlock();
+            if (secondLock.isHeldByCurrentThread()) {
+                secondLock.unlock();
             }
         }
     }
