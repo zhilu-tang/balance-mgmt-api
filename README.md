@@ -154,7 +154,38 @@ sh kubectl apply -f deploy/mysql-service.yml
 sh kubectl apply -f deploy/redis-service.yml
 sh kubectl apply -f deploy/balance-mgmt-deployment-local.yml
 ```
+## 架构图
 
+```mermaid
+graph TD
+    A[账户余额管理 API 服务] --> B[Spring Boot 应用]
+    B --> C[MySQL 数据库]
+    B --> D[Kubernetes Deployment]
+    D --> E[Kubernetes Pod]
+    E --> F["Container (balance-mgmt-api)"]
+    F --> C
+    D --> G[Kubernetes Service]
+    G --> H[Load Balancer]
+    H --> I[External Network]
+    H --> J[Ingress Controller]
+    J --> K[Ingress Resource]
+    K --> G
+    A --> L["部署脚本 (deploy.sh)"]
+    L --> M["构建脚本 (build.sh)"]
+    M --> N[Docker 构建]
+    N --> O[Docker 镜像]
+    O --> P[Docker Registry]
+    P --> Q[Kubernetes 部署]
+    Q --> D
+    A --> R["测试脚本 (test.sh)"]
+    R --> S[Unit Tests]
+    R --> T[Integration Tests]
+    R --> U[Performance Tests]
+    A --> V["文档 (README.md)"]
+    V --> W["API 文档 (Swagger)"]
+    W --> X[Swagger UI]
+    X --> G
+```
 
 ## API 文档
 
