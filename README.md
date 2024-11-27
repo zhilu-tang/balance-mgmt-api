@@ -47,11 +47,11 @@ balance-mgmt-api/
 │               │   ├── AccountControllerIntegrationTest.java
 │               │   └── TransactionServiceIntegrationTest.java
 │               ├── performance/
-│               │   └── JmeterLiveTest.java         # 性能测试脚本
+│               │   └── JmeterLiveTest.java         # 性能测试脚本(nogui mode)
 │               └── service/
 │                   └── TransactionServiceTest.java # 交易服务测试
 ├── deploy/                                         # k8s 集群部署文件
-├── loadtesting/                                    # 性能测试脚本、性能测试报告
+├── loadtesting/                                    # 性能测试脚本(manual)、性能测试报告
 ├── pom.xml                                         # Maven 构建脚本
 └── README.md                                       # 项目说明文档
 ```
