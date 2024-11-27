@@ -27,27 +27,33 @@ balance-mgmt-api/
 │   │   ├── java/
 │   │   │   └── com/pkg/balance/mgmt/api/
 │   │   │       ├── controller/
-│   │   │       │   └── BalanceController.java
+│   │   │       │   └── AccountController.java      # 账户控制器
 │   │   │       ├── service/
-│   │   │       │   └── BalanceService.java
+│   │   │       │   └── AccountService.java         # 账户服务
+│   │   │       │   └── TransactionService.java     # 交易服务
 │   │   │       ├── repository/
 │   │   │       │   └── BalanceRepository.java
-│   │   │       └── BalanceApplication.java
+│   │   │       └── BalanceMgmtApplication.java     # 应用启动类
 │   │   └── resources/
 │   │       ├── application.yml
-│   │       └── data.sql
+│   │       ├── application-custer\test\dev\prod.yml # 配置文件
+│   │       └── db/
+│   │           └── mysql
+│   │               └── balance_db.sql              # 数据库脚本
 │   └── test/
 │       └── java/
 │           └── com/pkg/balance/mgmt/api/
-│               ├── controller/
-│               │   └── BalanceControllerTest.java
-│               ├── service/
-│               │   └── BalanceServiceTest.java
-│               └── BalanceApplicationTests.java
-├── deploy        # k8s 集群部署文件
-├── loadtesting   # 性能测试脚本、性能测试报告
-├── pom.xml       # Maven 构建脚本
-└── README.md     # 项目说明文档
+│               ├── integration/                    # 集成测试
+│               │   ├── AccountControllerIntegrationTest.java
+│               │   └── TransactionServiceIntegrationTest.java
+│               ├── performance/
+│               │   └── JmeterLiveTest.java         # 性能测试脚本
+│               └── service/
+│                   └── TransactionServiceTest.java # 交易服务测试
+├── deploy/                                         # k8s 集群部署文件
+├── loadtesting/                                    # 性能测试脚本、性能测试报告
+├── pom.xml                                         # Maven 构建脚本
+└── README.md                                       # 项目说明文档
 ```
 ## 技术栈
 
